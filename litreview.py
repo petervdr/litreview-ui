@@ -35,9 +35,9 @@ with st.sidebar:
 if file_path:
     # Load the data into a DataFrame
     if file_path.name.endswith(".csv"):
-        df = pd.read_csv(file_path)
+        df = pd.read_csv(file_path)  # Use the uploaded file object directly
     else:
-        df = pd.read_excel(file_path)
+        df = pd.read_excel(file_path)  # Use the uploaded file object directly
 
     # Ensure the DataFrame is saved in session state for reuse
     if 'df' not in st.session_state:
