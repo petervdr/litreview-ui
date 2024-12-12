@@ -57,6 +57,12 @@ if file_path:
             break
         st.session_state.row_index += 1
 
+    # Calculate and display progress
+    total_rows = len(st.session_state.df)
+    handled_rows = st.session_state.df['Inclusion'].notna().sum() + st.session_state.df['Exclusion'].notna().sum()
+    progress_message = f"Progress: {handled_rows} of {total_rows} rows handled."
+    st.sidebar.markdown(f"### {progress_message}")
+
     # If all rows have been processed
     if st.session_state.row_index >= len(st.session_state.df):
         st.write("No more rows to review!")
