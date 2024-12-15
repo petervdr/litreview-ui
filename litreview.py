@@ -59,7 +59,7 @@ if file_path:
 
     # Calculate and display progress
     total_rows = len(st.session_state.df)
-    handled_rows = st.session_state.df['Inclusion'].notna().sum() + st.session_state.df['Exclusion'].notna().sum()
+    handled_rows = st.session_state.df['Inclusion'].notna().sum()
     progress_message = f"Progress: {handled_rows} of {total_rows} rows handled."
     st.sidebar.markdown(f"### {progress_message}")
 
