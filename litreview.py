@@ -61,46 +61,52 @@ if file_path:
         st.write("No more rows to review!")
     else:
         # Display the current row
-        current_row = st.session_state.df.iloc[st.session_state.row_index]
-        st.markdown(f"## {current_row['Title']}")
-        st.markdown(
-            f"**{current_row['Publication Year']}** | *{current_row['Publication Title']}* | Row in Excel: *{st.session_state.row_index}*")
 
-        # Highlight keywords in Abstract Note
-        abstract_note = current_row.get('Abstract Note', '')
-        abstract_note_highlighted = abstract_note if isinstance(abstract_note, str) else ''  # Ensure the value is a string
-        for keyword in HIGHLIGHT_KEYWORDS:
-            abstract_note_highlighted = re.sub(
-                fr"(?i)({keyword})",  # Case-insensitive match for the keyword
-                r"<mark style='background-color: yellow;'>\1</mark>",  # Highlight the matched word
-                abstract_note_highlighted
-            )
-        st.markdown(f"**Abstract Note:**", unsafe_allow_html=True)
-        st.markdown(f"<div style='font-size:1.2em;'>{abstract_note_highlighted}</div>", unsafe_allow_html=True)
+        st.write("Eerste keer: kies To Discuss")
+        def show_data():
+            current_row = st.session_state.df.iloc[st.session_state.row_index]
+            st.markdown(f"## {current_row['Title']}")
+            st.markdown(
+                f"**{current_row['Publication Year']}** | *{current_row['Publication Title']}* | Row in Excel: *{st.session_state.row_index}*")
+
+            # Highlight keywords in Abstract Note
+            abstract_note = current_row.get('Abstract Note', '')
+            abstract_note_highlighted = abstract_note if isinstance(abstract_note, str) else ''  # Ensure the value is a string
+            for keyword in HIGHLIGHT_KEYWORDS:
+                abstract_note_highlighted = re.sub(
+                    fr"(?i)({keyword})",  # Case-insensitive match for the keyword
+                    r"<mark style='background-color: yellow;'>\1</mark>",  # Highlight the matched word
+                    abstract_note_highlighted
+                )
+            st.markdown(f"**Abstract Note:**", unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size:1.2em;'>{abstract_note_highlighted}</div>", unsafe_allow_html=True)
 
         # Define actions
-        def update_row(row, inclusion_value, exclusion_value=None):
-            st.session_state.df.loc[row, 'Inclusion'] = inclusion_value
+        def update_row(inclusion_value, exclusion_value=None):
+            st.session_state.df.loc[st.session_state.row_index, 'Inclusion'] = inclusion_value
             if exclusion_value:
-                st.session_state.df.loc[row, 'Exclusion'] = exclusion_value
+                st.session_state.df.loc[st.session_state.row_index, 'Exclusion'] = exclusion_value
             
             # Update message in the UI
-            st.success(f"Updated row {row} with Inclusion: {inclusion_value}, Exclusion: {exclusion_value}")
+            # st.success(f"Updated row {st.session_state.row_index} with Inclusion: {inclusion_value}, Exclusion: {exclusion_value} is title {st.session_state.df.iloc[st.session_state.row_index]['Title']}")
             
             # Increment the row index and force rerender of the next row
-            st.session_state.row_index += 1
-            
+            st.session_state.row_index = next((i for i, row in st.session_state.df.iterrows() if pd.isna(row['Inclusion'])), 0)
+
+            st.session_state.updated = True
+            show_data()
+
 
 
         # Action buttons
-        col1, col2, col3, col4 = st.columns(4)
-        if col1.button(st.session_state.row_index, "Include"):
+        col1, col2, col3, col4, col5 = st.columns(5)
+        if col1.button("Include"):
             update_row("Yes")
-        if col2.button(st.session_state.row_index, "Exclude - Not Board"):
+        if col2.button("Exclude - Not Board"):
             update_row("No", "Not Board")
-        if col3.button(st.session_state.row_index, "Exclude - Not Ethics"):
-            update_row(st.session_state.row_index, "No", "Not Ethics")
+        if col3.button("Exclude - Not Ethics"):
+            update_row("No", "Not Ethics")
         if col4.button("Exclude - Other"):
-            update_row(st.session_state.row_index, "No", "Other")
-        if st.button("To Discuss"):
-            update_row(st.session_state.row_index, "Discuss")
+            update_row("No", "Other")
+        if col5.button("To Discuss"):
+            update_row("Discuss")
