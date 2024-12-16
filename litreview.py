@@ -46,17 +46,9 @@ if file_path:
     # Sort the entire DataFrame by 'Title'
     st.session_state.df = st.session_state.df.sort_values(by="Title", ascending=True).reset_index(drop=True)
 
-    # Initialize the row index if not already set
+    # Initialize the row index to the first row with no Inclusion value
     if 'row_index' not in st.session_state:
-        #st.session_state.row_index = next((i for i, row in st.session_state.df.iterrows() if pd.isna(row['Inclusion'])), len(st.session_state.df))+1
-        st.session_state.row_index = 1
-
-    # Ensure row_index does not exceed the DataFrame length
-    while st.session_state.row_index < len(st.session_state.df):
-        current_row = st.session_state.df.iloc[st.session_state.row_index]
-        if pd.isna(current_row['Inclusion']):
-            break
-        st.session_state.row_index += 1
+        st.session_state.row_index = next((i for i, row in st.session_state.df.iterrows() if pd.isna(row['Inclusion'])), 0)
 
     # Calculate and display progress
     total_rows = len(st.session_state.df)
@@ -88,11 +80,12 @@ if file_path:
 
         # Define actions
         def update_row(inclusion_value, exclusion_value=None):
+            title = st.session_state.df.loc[st.session_state.row_index, 'Title']
             st.session_state.df.loc[st.session_state.row_index, 'Inclusion'] = inclusion_value
             if exclusion_value:
                 st.session_state.df.loc[st.session_state.row_index, 'Exclusion'] = exclusion_value
             # Display update message in the UI
-            st.success(f"Updated row {st.session_state.row_index} with Inclusion: {inclusion_value}, Exclusion: {exclusion_value}")
+            st.success(f"Updated row {st.session_state.row_index} (Title: {title}) with Inclusion: {inclusion_value}, Exclusion: {exclusion_value}")
             st.session_state.row_index += 1
 
         # Action buttons
