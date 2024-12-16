@@ -84,9 +84,16 @@ if file_path:
             st.session_state.df.loc[st.session_state.row_index, 'Inclusion'] = inclusion_value
             if exclusion_value:
                 st.session_state.df.loc[st.session_state.row_index, 'Exclusion'] = exclusion_value
-            # Display update message in the UI
+            
+            # Update message in the UI
             st.success(f"Updated row {st.session_state.row_index} (Title: {title}) with Inclusion: {inclusion_value}, Exclusion: {exclusion_value}")
+            
+            # Increment the row index and force rerender of the next row
             st.session_state.row_index += 1
+            
+            # Refresh the page by stopping the current rendering
+            st.experimental_rerun()
+
 
         # Action buttons
         col1, col2, col3, col4 = st.columns(4)
