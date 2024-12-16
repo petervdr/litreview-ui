@@ -64,7 +64,7 @@ if file_path:
         current_row = st.session_state.df.iloc[st.session_state.row_index]
         st.markdown(f"## {current_row['Title']}")
         st.markdown(
-            f"**{current_row['Publication Year']}** | *{current_row['Publication Title']}*" | Row in Excel: *{st.session_state.row_index}*")
+            f"**{current_row['Publication Year']}** | *{current_row['Publication Title']}* | Row in Excel: *{st.session_state.row_index}*")
 
         # Highlight keywords in Abstract Note
         abstract_note = current_row.get('Abstract Note', '')
