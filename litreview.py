@@ -48,7 +48,7 @@ if file_path:
 
     # Initialize the row index if not already set
     if 'row_index' not in st.session_state:
-        st.session_state.row_index = next((i for i, row in st.session_state.df.iterrows() if pd.isna(row['Inclusion'])), len(st.session_state.df))
+        st.session_state.row_index = next((i for i, row in st.session_state.df.iterrows() if pd.isna(row['Inclusion'])), len(st.session_state.df))+1
 
     # Ensure row_index does not exceed the DataFrame length
     while st.session_state.row_index < len(st.session_state.df):
@@ -91,7 +91,7 @@ if file_path:
             if exclusion_value:
                 st.session_state.df.loc[st.session_state.row_index, 'Exclusion'] = exclusion_value
             # Display update message in the UI
-            st.success(f"Updated row {st.session_state.row_index} with Inclusion: {inclusion_value}, Exclusion: {exclusion_value}, Title: {st.session_state.df.loc[st.session_state.row_index, 'Title']}")
+            st.success(f"Updated row {st.session_state.row_index} with Inclusion: {inclusion_value}, Exclusion: {exclusion_value}")
             st.session_state.row_index += 1
 
         # Action buttons
