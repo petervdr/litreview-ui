@@ -43,8 +43,8 @@ if file_path:
     if 'df' not in st.session_state:
         st.session_state.df = df.copy()
 
-    # Sort the entire DataFrame by 'Publication Title'
-    st.session_state.df = st.session_state.df.sort_values(by="Publication Title", ascending=True).reset_index(drop=True)
+    # Sort the entire DataFrame by 'Title'
+    st.session_state.df = st.session_state.df.sort_values(by="Title", ascending=True).reset_index(drop=True)
 
     # Initialize the row index if not already set
     if 'row_index' not in st.session_state:
@@ -90,6 +90,8 @@ if file_path:
             st.session_state.df.loc[st.session_state.row_index, 'Inclusion'] = inclusion_value
             if exclusion_value:
                 st.session_state.df.loc[st.session_state.row_index, 'Exclusion'] = exclusion_value
+            # Display update message in the UI
+            st.success(f"Updating row {st.session_state.row_index} with Inclusion: {inclusion_value}, Exclusion: {exclusion_value}")
             st.session_state.row_index += 1
 
         # Action buttons
