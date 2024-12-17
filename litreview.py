@@ -50,6 +50,10 @@ if file_path:
     if 'row_index' not in st.session_state:
         st.session_state.row_index = next((i for i, row in st.session_state.df.iterrows() if pd.isna(row['Inclusion'])), 0)
 
+    # Initialize the updating flag
+    if 'is_updating' not in st.session_state:
+        st.session_state.is_updating = False
+
     # Calculate and display progress
     total_rows = len(st.session_state.df)
     handled_rows = st.session_state.df['Inclusion'].notna().sum()
@@ -61,7 +65,6 @@ if file_path:
         st.write("No more rows to review!")
     else:
         # Display the current row
-
         st.write("Eerste keer: kies To Discuss")
         def show_data():
             current_row = st.session_state.df.iloc[st.session_state.row_index]
@@ -83,30 +86,29 @@ if file_path:
 
         # Define actions
         def update_row(inclusion_value, exclusion_value=None):
+            st.session_state.is_updating = True
             st.session_state.df.loc[st.session_state.row_index, 'Inclusion'] = inclusion_value
             if exclusion_value:
                 st.session_state.df.loc[st.session_state.row_index, 'Exclusion'] = exclusion_value
-            
-            # Update message in the UI
-            # st.success(f"Updated row {st.session_state.row_index} with Inclusion: {inclusion_value}, Exclusion: {exclusion_value} is title {st.session_state.df.iloc[st.session_state.row_index]['Title']}")
-            
+
             # Increment the row index and force rerender of the next row
             st.session_state.row_index = next((i for i, row in st.session_state.df.iterrows() if pd.isna(row['Inclusion'])), 0)
-
-            st.session_state.updated = True
-            show_data()
-
-
+            st.session_state.is_updating = False
 
         # Action buttons
         col1, col2, col3, col4, col5 = st.columns(5)
-        if col1.button("Include"):
+        buttons_disabled = st.session_state.is_updating
+
+        if col1.button("Include", disabled=buttons_disabled):
             update_row("Yes")
-        if col2.button("Exclude - Not Board"):
+        if col2.button("Exclude - Not Board", disabled=buttons_disabled):
             update_row("No", "Not Board")
-        if col3.button("Exclude - Not Ethics"):
+        if col3.button("Exclude - Not Ethics", disabled=buttons_disabled):
             update_row("No", "Not Ethics")
-        if col4.button("Exclude - Other"):
+        if col4.button("Exclude - Other", disabled=buttons_disabled):
             update_row("No", "Other")
-        if col5.button("To Discuss"):
+        if col5.button("To Discuss", disabled=buttons_disabled):
             update_row("Discuss")
+
+        # Show the current data
+        show_data()
