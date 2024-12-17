@@ -1,109 +1,96 @@
-import pandas as pd
 import streamlit as st
+import pandas as pd
 from io import BytesIO
-import re
-from datetime import datetime
 
-# Define keywords for highlighting
-HIGHLIGHT_KEYWORDS = ["board", "director", "governance", "ethic", "moral", "virtue", "virtuous", "integrity", "utilitarian", "values", "decision-making"]
+# Function to handle file upload and initialize the DataFrame
+def load_data():
+    uploaded_file = st.file_uploader("Upload an XLSX file", type=["xlsx"])
+    if uploaded_file:
+        df = pd.read_excel(uploaded_file)
+        if "Inclusion" not in df.columns:
+            df["Inclusion"] = ""
+        if "Exclusion" not in df.columns:
+            df["Exclusion"] = ""
+        st.session_state.data = df
+        return df
+    return None
 
-# Streamlit configuration
-st.set_page_config(layout="wide")
-
-with st.sidebar:
-    file_path = st.file_uploader("Upload your spreadsheet", type=["csv", "xlsx"])
-
-# Helper function to save DataFrame back to the uploaded file format
-def save_to_file(df, original_file):
+# Function to download the modified DataFrame
+def download_data():
     output = BytesIO()
-    if original_file.name.endswith(".csv"):
-        df.to_csv(output, index=False)
+    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+        st.session_state.data.to_excel(writer, index=False, sheet_name="Sheet1")
+    processed_data = output.getvalue()
+    st.download_button(
+        label="Download Updated Excel",
+        data=processed_data,
+        file_name="updated_file.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+# Function to handle row actions
+def handle_action(action, reason=None):
+    row = st.session_state.current_row
+    if action == "Include":
+        st.session_state.data.at[row, "Inclusion"] = "Yes"
+        st.session_state.data.at[row, "Exclusion"] = ""
+    elif action == "To Discuss":
+        st.session_state.data.at[row, "Inclusion"] = "Discuss"
+        st.session_state.data.at[row, "Exclusion"] = ""
     else:
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df.to_excel(writer, index=False, sheet_name='Sheet1')
-    return output.getvalue()
+        st.session_state.data.at[row, "Inclusion"] = "Exclude"
+        st.session_state.data.at[row, "Exclusion"] = reason
+    st.session_state.current_row += 1
 
-def highlight_keywords(text):
-    if not isinstance(text, str):
-        return ""
-    for keyword in HIGHLIGHT_KEYWORDS:
-        text = re.sub(
-            fr"(?i)({keyword})",  # Case-insensitive match
-            r"<mark style='background-color: yellow;'>\\1</mark>",
-            text
-        )
-    return text
+# Main script
+st.title("Row-by-Row XLSX Review")
 
-def show_data(df, row_index):
-    current_row = df.iloc[row_index]
-    st.markdown(f"## {current_row['Title']}")
-    st.markdown(f"**{current_row['Publication Year']}** | *{current_row['Publication Title']}* | Row in Excel: *{row_index + 1}*")
+data = load_data()
 
-    # Highlight abstract note keywords
-    abstract_note = current_row.get('Abstract Note', '')
-    highlighted_abstract = highlight_keywords(abstract_note)
-    st.markdown("**Abstract Note:**", unsafe_allow_html=True)
-    st.markdown(f"<div style='font-size:1.2em;'>{highlighted_abstract}</div>", unsafe_allow_html=True)
+if data is not None:
+    if "current_row" not in st.session_state:
+        st.session_state.current_row = 0
 
-if file_path:
-    # Load the uploaded file into a DataFrame
-    if file_path.name.endswith(".csv"):
-        df = pd.read_csv(file_path)
+    # Show current row data
+    row = st.session_state.current_row
+
+    if row < len(st.session_state.data):
+        st.subheader(st.session_state.data.iloc[row].get("Title", "No Title"))
+        st.write(f"**Publication Title:** {st.session_state.data.iloc[row].get('Publication Title', 'N/A')}")
+        st.write(f"**Publication Year:** {st.session_state.data.iloc[row].get('Publication Year', 'N/A')}")
+        st.write(f"**Abstract Note:** {st.session_state.data.iloc[row].get('Abstract Note', 'N/A')}")
+
+        # Create a form to handle actions
+        with st.form(key=f"form_{row}"):
+            col1, col2, col3, col4, col5 = st.columns(5)
+            with col1:
+                include = st.form_submit_button("Include")
+            with col2:
+                discuss = st.form_submit_button("To Discuss")
+            with col3:
+                exclude_ethics = st.form_submit_button("Exclude - Not Ethics")
+            with col4:
+                exclude_board = st.form_submit_button("Exclude - Not Board")
+            with col5:
+                exclude_other = st.form_submit_button("Exclude - Other")
+
+            if include:
+                handle_action("Include")
+            if discuss:
+                handle_action("To Discuss")
+            if exclude_ethics:
+                handle_action("Exclude", "Not Ethics")
+            if exclude_board:
+                handle_action("Exclude", "Not Board")
+            if exclude_other:
+                handle_action("Exclude", "Other")
+
+        st.write(f"You are reviewing row {row + 1} of {len(st.session_state.data)}")
+
     else:
-        df = pd.read_excel(file_path)
+        st.write("All rows have been reviewed.")
 
-    # Ensure the DataFrame is sorted
-    df = df.sort_values(by="Publication Title", ascending=True).reset_index(drop=True)
-
-    # Find the first unprocessed row
-    row_index = next((i for i, row in df.iterrows() if pd.isna(row['Inclusion'])), 0)
-
-    # Calculate progress
-    total_rows = len(df)
-    handled_rows = df['Inclusion'].notna().sum()
-    progress_message = f"Progress: {handled_rows} of {total_rows} rows handled."
-    st.sidebar.markdown(f"### {progress_message}")
-
-    # If all rows are processed
-    if row_index >= len(df):
-        st.write("No more rows to review!")
-    else:
-        # Show the current data
-        show_data(df, row_index)
-
-        # Define action functions
-        def update_row(inclusion_value, exclusion_value=None):
-            nonlocal row_index
-            df.loc[row_index, 'Inclusion'] = inclusion_value
-            if exclusion_value:
-                df.loc[row_index, 'Exclusion'] = exclusion_value
-
-            # Save changes directly to the file
-            updated_data = save_to_file(df, file_path)
-            timestamp = datetime.now().strftime("%Y%m%d%H%M")
-            file_name = f"{timestamp}-litreview-boardethics.{file_path.name.split('.')[-1]}"
-            st.sidebar.download_button(
-                label="Download Updated File",
-                data=updated_data,
-                file_name=file_name,
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" if file_path.name.endswith(".xlsx") else "text/csv"
-            )
-
-            # Move to the next row
-            row_index = next((i for i, row in df.iterrows() if pd.isna(row['Inclusion'])), len(df))
-
-        # Action buttons
-        col1, col2, col3, col4, col5 = st.columns(5)
-        if col1.button("Include"):
-            update_row("Yes")
-        if col2.button("Exclude - Not Board"):
-            update_row("No", "Not Board")
-        if col3.button("Exclude - Not Ethics"):
-            update_row("No", "Not Ethics")
-        if col4.button("Exclude - Other"):
-            update_row("No", "Other")
-        if col5.button("To Discuss"):
-            update_row("Discuss")
-
-        # Refresh the UI
-        st.experimental_rerun()
+    # Download the updated file
+    download_data()
+else:
+    st.write("Please upload an XLSX file to begin.")
