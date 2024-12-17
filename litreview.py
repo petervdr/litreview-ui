@@ -29,10 +29,21 @@ def highlight_keywords(text):
     for keyword in HIGHLIGHT_KEYWORDS:
         text = re.sub(
             fr"(?i)({keyword})",  # Case-insensitive match
-            r"<mark style='background-color: yellow;'>\1</mark>",
+            r"<mark style='background-color: yellow;'>\\1</mark>",
             text
         )
     return text
+
+def show_data(df, row_index):
+    current_row = df.iloc[row_index]
+    st.markdown(f"## {current_row['Title']}")
+    st.markdown(f"**{current_row['Publication Year']}** | *{current_row['Publication Title']}* | Row in Excel: *{row_index + 1}*")
+
+    # Highlight abstract note keywords
+    abstract_note = current_row.get('Abstract Note', '')
+    highlighted_abstract = highlight_keywords(abstract_note)
+    st.markdown("**Abstract Note:**", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:1.2em;'>{highlighted_abstract}</div>", unsafe_allow_html=True)
 
 if file_path:
     # Load the uploaded file into a DataFrame
@@ -57,16 +68,8 @@ if file_path:
     if row_index >= len(df):
         st.write("No more rows to review!")
     else:
-        # Display current row details
-        current_row = df.iloc[row_index]
-        st.markdown(f"## {current_row['Title']}")
-        st.markdown(f"**{current_row['Publication Year']}** | *{current_row['Publication Title']}* | Row in Excel: *{row_index + 1}*")
-
-        # Highlight abstract note keywords
-        abstract_note = current_row.get('Abstract Note', '')
-        highlighted_abstract = highlight_keywords(abstract_note)
-        st.markdown("**Abstract Note:**", unsafe_allow_html=True)
-        st.markdown(f"<div style='font-size:1.2em;'>{highlighted_abstract}</div>", unsafe_allow_html=True)
+        # Show the current data
+        show_data(df, row_index)
 
         # Define action functions
         def update_row(inclusion_value, exclusion_value=None):
@@ -102,5 +105,5 @@ if file_path:
         if col5.button("To Discuss"):
             update_row("Discuss")
 
-        # Refresh the UI to show the next row
+        # Refresh the UI
         st.experimental_rerun()
