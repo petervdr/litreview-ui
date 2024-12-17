@@ -76,19 +76,19 @@ if data is not None:
 
             if include:
                 handle_action("Include")
-                st.experimental_rerun()
+                st.rerun()
             if discuss:
                 handle_action("To Discuss")
-                st.experimental_rerun()
+                st.rerun()
             if exclude_ethics:
                 handle_action("Exclude", "Not Ethics")
-                st.experimental_rerun()
+                st.rerun()
             if exclude_board:
                 handle_action("Exclude", "Not Board")
-                st.experimental_rerun()
+                st.rerun()
             if exclude_other:
                 handle_action("Exclude", "Other")
-                st.experimental_rerun()
+                st.rerun()
 
         st.write(f"You are reviewing row {row + 1} of {len(st.session_state.data)}")
 
