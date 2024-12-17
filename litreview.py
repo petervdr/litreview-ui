@@ -60,42 +60,35 @@ if data is not None:
         st.write(f"You are reviewing row {row + 1} of {len(st.session_state.data)}")
 
         # Action buttons at the top, above the title
-        with st.form(key=f"form_{row}"):
-            col1, col2, col3, col4, col5 = st.columns(5)
-            with col1:
-                include = st.form_submit_button("Include")
-            with col2:
-                discuss = st.form_submit_button("To Discuss")
-            with col3:
-                exclude_ethics = st.form_submit_button("Exclude - Not Ethics")
-            with col4:
-                exclude_board = st.form_submit_button("Exclude - Not Board")
-            with col5:
-                exclude_other = st.form_submit_button("Exclude - Other")
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1:
+            include = st.button("Include")
+        with col2:
+            discuss = st.button("To Discuss")
+        with col3:
+            exclude_ethics = st.button("Exclude - Not Ethics")
+        with col4:
+            exclude_board = st.button("Exclude - Not Board")
+        with col5:
+            exclude_other = st.button("Exclude - Other")
 
-            if include:
-                handle_action("Include")
-                st.rerun()
-            if discuss:
-                handle_action("To Discuss")
-                st.rerun()
-            if exclude_ethics:
-                handle_action("Exclude", "Not Ethics")
-                st.rerun()
-            if exclude_board:
-                handle_action("Exclude", "Not Board")
-                st.rerun()
-            if exclude_other:
-                handle_action("Exclude", "Other")
-                st.rerun()
-
+        if include:
+            handle_action("Include")
+        if discuss:
+            handle_action("To Discuss")
+        if exclude_ethics:
+            handle_action("Exclude", "Not Ethics")
+        if exclude_board:
+            handle_action("Exclude", "Not Board")
+        if exclude_other:
+            handle_action("Exclude", "Other")
         
+        # Display row data after actions
         st.subheader(st.session_state.data.iloc[row].get("Title", "No Title"))
         st.write(f"**Publication Title:** {st.session_state.data.iloc[row].get('Publication Title', 'N/A')}")
         st.write(f"**Publication Year:** {st.session_state.data.iloc[row].get('Publication Year', 'N/A')}")
         st.write(f"**Abstract Note:** {st.session_state.data.iloc[row].get('Abstract Note', 'N/A')}")
 
-    
     else:
         st.write("All rows have been reviewed.")
 
