@@ -31,6 +31,7 @@ def download_data():
 # Function to handle row actions
 def handle_action(action, reason=None):
     row = st.session_state.current_row
+    # Update the DataFrame in the session state directly
     if action == "Include":
         st.session_state.data.at[row, "Inclusion"] = "Yes"
         st.session_state.data.at[row, "Exclusion"] = ""
@@ -40,6 +41,8 @@ def handle_action(action, reason=None):
     else:
         st.session_state.data.at[row, "Inclusion"] = "Exclude"
         st.session_state.data.at[row, "Exclusion"] = reason
+
+    # Increment the row for the next review
     st.session_state.current_row += 1
 
 # Main script
@@ -49,18 +52,17 @@ if data is not None:
     if "current_row" not in st.session_state:
         st.session_state.current_row = 0
 
-    # Sidebar content
+    # Sidebar content (current row and download button)
     row = st.session_state.current_row
     if row < len(st.session_state.data):
-        # Display the row information in the main area
+        # Show the current row data in the main area
+        st.write(f"You are reviewing row {row + 1} of {len(st.session_state.data)}")
         st.subheader(st.session_state.data.iloc[row].get("Title", "No Title"))
         st.write(f"**Publication Title:** {st.session_state.data.iloc[row].get('Publication Title', 'N/A')}")
         st.write(f"**Publication Year:** {st.session_state.data.iloc[row].get('Publication Year', 'N/A')}")
         st.write(f"**Abstract Note:** {st.session_state.data.iloc[row].get('Abstract Note', 'N/A')}")
 
         # Action buttons at the top, above the title
-        st.write(f"You are reviewing row {row + 1} of {len(st.session_state.data)}")
-
         with st.form(key=f"form_{row}"):
             col1, col2, col3, col4, col5 = st.columns(5)
             with col1:
