@@ -65,7 +65,7 @@ if file_path:
         st.write("No more rows to review!")
     else:
         # Display the current row
-        st.write("Eerste keer: kies To Discuss")
+        st.write("")
         def show_data():
             current_row = st.session_state.df.iloc[st.session_state.row_index]
             st.markdown(f"## {current_row['Title']}")
