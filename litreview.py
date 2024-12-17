@@ -55,12 +55,9 @@ if data is not None:
     # Sidebar content (current row and download button)
     row = st.session_state.current_row
     if row < len(st.session_state.data):
+        
         # Show the current row data in the main area
         st.write(f"You are reviewing row {row + 1} of {len(st.session_state.data)}")
-        st.subheader(st.session_state.data.iloc[row].get("Title", "No Title"))
-        st.write(f"**Publication Title:** {st.session_state.data.iloc[row].get('Publication Title', 'N/A')}")
-        st.write(f"**Publication Year:** {st.session_state.data.iloc[row].get('Publication Year', 'N/A')}")
-        st.write(f"**Abstract Note:** {st.session_state.data.iloc[row].get('Abstract Note', 'N/A')}")
 
         # Action buttons at the top, above the title
         with st.form(key=f"form_{row}"):
@@ -92,6 +89,13 @@ if data is not None:
                 handle_action("Exclude", "Other")
                 st.rerun()
 
+        
+        st.subheader(st.session_state.data.iloc[row].get("Title", "No Title"))
+        st.write(f"**Publication Title:** {st.session_state.data.iloc[row].get('Publication Title', 'N/A')}")
+        st.write(f"**Publication Year:** {st.session_state.data.iloc[row].get('Publication Year', 'N/A')}")
+        st.write(f"**Abstract Note:** {st.session_state.data.iloc[row].get('Abstract Note', 'N/A')}")
+
+    
     else:
         st.write("All rows have been reviewed.")
 
