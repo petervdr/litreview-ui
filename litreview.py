@@ -43,8 +43,8 @@ if file_path:
     if 'df' not in st.session_state:
         st.session_state.df = df.copy()
 
-    # Sort the entire DataFrame by 'Title'
-    st.session_state.df = st.session_state.df.sort_values(by="Title", ascending=True).reset_index(drop=True)
+    # Sort the entire DataFrame by 'Publication Title'
+    st.session_state.df = st.session_state.df.sort_values(by="Publication Title", ascending=True).reset_index(drop=True)
 
     # Initialize the row index to the first row with no Inclusion value
     if 'row_index' not in st.session_state:
