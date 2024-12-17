@@ -70,6 +70,7 @@ if file_path:
 
         # Define action functions
         def update_row(inclusion_value, exclusion_value=None):
+            nonlocal row_index
             df.loc[row_index, 'Inclusion'] = inclusion_value
             if exclusion_value:
                 df.loc[row_index, 'Exclusion'] = exclusion_value
@@ -86,17 +87,20 @@ if file_path:
             )
 
             # Move to the next row
-            return next((i for i, row in df.iterrows() if pd.isna(row['Inclusion'])), len(df))
+            row_index = next((i for i, row in df.iterrows() if pd.isna(row['Inclusion'])), len(df))
 
         # Action buttons
         col1, col2, col3, col4, col5 = st.columns(5)
         if col1.button("Include"):
-            row_index = update_row("Yes")
+            update_row("Yes")
         if col2.button("Exclude - Not Board"):
-            row_index = update_row("No", "Not Board")
+            update_row("No", "Not Board")
         if col3.button("Exclude - Not Ethics"):
-            row_index = update_row("No", "Not Ethics")
+            update_row("No", "Not Ethics")
         if col4.button("Exclude - Other"):
-            row_index = update_row("No", "Other")
+            update_row("No", "Other")
         if col5.button("To Discuss"):
-            row_index = update_row("Discuss")
+            update_row("Discuss")
+
+        # Refresh the UI to show the next row
+        st.experimental_rerun()
